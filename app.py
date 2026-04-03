@@ -201,8 +201,19 @@ button[kind="secondary"] {
     display: inline-block !important;
 }
 
+/* Hide the drag-and-drop zone label — keep only the Upload button */
+[data-testid="stFileUploaderDropzone"] > div:first-child,
+[data-testid="stFileUploaderDropzoneInstructions"] {
+    display: none !important;
+}
+
 [data-testid="stFileUploaderDropzone"] {
     direction: rtl !important;
+    display: flex !important;
+    justify-content: flex-end !important;
+    align-items: center !important;
+    padding: 8px !important;
+    min-height: unset !important;
 }
 
 /* ── الشريط الجانبي ── */
