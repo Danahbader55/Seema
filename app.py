@@ -153,7 +153,6 @@ def generate_gps_traces(account_ids, city_map=None, suspicious_ids=None, seed=42
             curr_lat, curr_lon = new_lat, new_lon
     return pd.DataFrame(rows) if rows else pd.DataFrame()
 
-
 # ─────────────────────────────────────────────────────────────
 # إعداد الصفحة
 # ─────────────────────────────────────────────────────────────
@@ -185,13 +184,23 @@ html, body, [class*="css"], .stApp {
     text-align: right !important;
 }
 
-/* ── إصلاح زر رفع الملف ── */
+/* ── إصلاح زر رفع الملف (FIXED) ── */
 [data-testid="stFileUploaderDropzone"] button,
 [data-testid="stFileUploader"] button,
 button[kind="secondary"] {
     direction: ltr !important;
-    unicode-bidi: normal !important;
+    unicode-bidi: embed !important;
+    text-align: center !important;
 }
+
+/* Fix the Browse files button text specifically */
+[data-testid="stFileUploaderDropzone"] button span,
+[data-testid="stFileUploader"] button span {
+    direction: ltr !important;
+    unicode-bidi: embed !important;
+    display: inline-block !important;
+}
+
 [data-testid="stFileUploaderDropzone"] {
     direction: rtl !important;
 }
@@ -532,7 +541,6 @@ hr {
 </style>
 """, unsafe_allow_html=True)
 
-
 # ─────────────────────────────────────────────────────────────
 # هيدر الصفحة الرئيسية مع الشعارين
 # ─────────────────────────────────────────────────────────────
@@ -572,7 +580,6 @@ st.markdown(f"""
     صدر بواسطة نظام سِيماء | الهيئة العامة للإحصاء | هاكاثون 2025
 </div>
 """, unsafe_allow_html=True)
-
 
 # ─────────────────────────────────────────────────────────────
 # المعايير الرسمية
@@ -661,7 +668,6 @@ GPS_COL_MAP = {
     "دقة الإشارة (Accuracy - m)":"accuracy_m",
 }
 
-
 # ─────────────────────────────────────────────────────────────
 # دوال التحليل
 # ─────────────────────────────────────────────────────────────
@@ -710,7 +716,6 @@ def generate_reason(row):
         reasons.append("قفزات GPS مستحيلة")
     return " — ".join(reasons) if reasons else "سلوك ضمن النطاق الطبيعي"
 
-
 def build_internal_scores(df, contamination):
     df["city_lat"] = df["city"].map(lambda c: CITY_COORDS.get(c, (24.0, 45.0))[0])
     df["city_lon"] = df["city"].map(lambda c: CITY_COORDS.get(c, (24.0, 45.0))[1])
@@ -751,7 +756,6 @@ def build_internal_scores(df, contamination):
     ).round(2)
     return df
 
-
 def add_financial_scores(df, fin_df):
     fin = fin_df.copy()
     fin["fin_score"] = 0
@@ -768,7 +772,6 @@ def add_financial_scores(df, fin_df):
     )
     df["fin_score"] = df["fin_score"].fillna(0)
     return df
-
 
 def detect_flight_conflicts_v2(accounts_df, orders_df, flight_df):
     if flight_df.empty or orders_df.empty:
@@ -806,7 +809,6 @@ def detect_flight_conflicts_v2(accounts_df, orders_df, flight_df):
                         ),
                     })
     return pd.DataFrame(conflicts) if conflicts else pd.DataFrame()
-
 
 def detect_review_conflicts_v2(orders_df, review_df):
     if review_df.empty:
@@ -860,7 +862,6 @@ def detect_review_conflicts_v2(orders_df, review_df):
                 continue
     return pd.DataFrame(conflicts) if conflicts else pd.DataFrame()
 
-
 def detect_gps_conflicts_v2(orders_df, gps_df):
     if gps_df.empty:
         return pd.DataFrame()
@@ -906,7 +907,6 @@ def detect_gps_conflicts_v2(orders_df, gps_df):
                 continue
     return pd.DataFrame(conflicts) if conflicts else pd.DataFrame()
 
-
 def compute_final_scores(df, flight_conflicts, review_conflicts, gps_conflicts):
     for col, conflicts in [
         ("flight_conflict_score", flight_conflicts),
@@ -940,7 +940,6 @@ def compute_final_scores(df, flight_conflicts, review_conflicts, gps_conflicts):
     )
     df["reason"] = df.apply(generate_reason, axis=1)
     return df
-
 
 # ─────────────────────────────────────────────────────────────
 # دالة إنشاء تقرير PDF — عربي كامل + شعارات
@@ -1166,7 +1165,6 @@ def create_pdf_report(df, total, suspicious, estimated, gap_pct):
     doc.build(story)
     return buf.getvalue()
 
-
 # ─────────────────────────────────────────────────────────────
 # الشريط الجانبي
 # ─────────────────────────────────────────────────────────────
@@ -1220,7 +1218,6 @@ st.sidebar.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-
 # ─────────────────────────────────────────────────────────────
 # شاشة الترحيب — قبل رفع الملف
 # ─────────────────────────────────────────────────────────────
@@ -1240,7 +1237,6 @@ if uploaded_platform is None:
     </div>
     """, unsafe_allow_html=True)
     st.stop()
-
 
 # ─────────────────────────────────────────────────────────────
 # قراءة البيانات
@@ -1281,7 +1277,6 @@ else:
     gps_df = generate_gps_traces(account_ids, city_map=city_map)
     gps_df["timestamp"] = pd.to_datetime(gps_df["timestamp"], errors="coerce")
 
-
 # ─────────────────────────────────────────────────────────────
 # التحليل
 # ─────────────────────────────────────────────────────────────
@@ -1304,7 +1299,6 @@ official_pct        = BENCHMARKS["suspicious_ratio"] * 100
 gap_vs_official     = round(gap_pct - official_pct, 2)
 display_df          = df[df["final_flag"] == "مشبوه"].copy() if show_only_suspicious else df.copy()
 
-
 # ─────────────────────────────────────────────────────────────
 # التبويبات
 # ─────────────────────────────────────────────────────────────
@@ -1315,7 +1309,6 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "📋 دعم القرار",
     "📄 التقارير",
 ])
-
 
 # ══════════════════════════════════════════════════════════════
 # Tab 1: النظرة العامة
@@ -1422,7 +1415,6 @@ with tab1:
         df.sort_values("suspicion_score", ascending=False)[top10_cols].head(10),
         use_container_width=True
     )
-
 
 # ══════════════════════════════════════════════════════════════
 # Tab 2: المصادر غير التقليدية
@@ -1589,7 +1581,6 @@ with tab2:
     </div>
     """, unsafe_allow_html=True)
 
-
 # ══════════════════════════════════════════════════════════════
 # Tab 3: محرك الكشف
 # ══════════════════════════════════════════════════════════════
@@ -1739,7 +1730,6 @@ with tab3:
         use_container_width=True
     )
 
-
 # ══════════════════════════════════════════════════════════════
 # Tab 4: دعم القرار
 # ══════════════════════════════════════════════════════════════
@@ -1837,7 +1827,6 @@ with tab4:
     </div>
     """, unsafe_allow_html=True)
 
-
 # ══════════════════════════════════════════════════════════════
 # Tab 5: التقارير
 # ══════════════════════════════════════════════════════════════
@@ -1921,5 +1910,3 @@ with tab5:
                 st.success("✅ تم إنشاء التقرير بنجاح!")
             except Exception as e:
                 st.error(f"حدث خطأ أثناء إنشاء التقرير: {e}")
-
-
